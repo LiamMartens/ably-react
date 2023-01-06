@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 import { AblyContext } from './AblyContext';
 
 type UseAblyOptions = {
+  skip?: boolean
   clientId?: string
   autoConnect?: boolean
   name: string
@@ -39,6 +40,10 @@ export function useAbly(options: UseAblyOptions) {
   authCallbackRef.current = options.authCallback;
 
   useEffect(() => {
+    if (options.skip) {
+      return () => {};
+    }
+
     const handleInitialized = () => setStatus(AblyClientStatus.INITIALIZED);
     const handleConnected = () => setStatus(AblyClientStatus.CONNECTED);
     const handleConnecting = () => setStatus(AblyClientStatus.CONNECTING);
@@ -88,7 +93,7 @@ export function useAbly(options: UseAblyOptions) {
       // @README client will be auto-closed if all locks are released
       context.releaseClient(options.name, hookId.current);
     };
-  }, [options.name, options.clientId, options.clientOptions]);
+  }, [options.skip, options.name, options.clientId, options.clientOptions]);
 
   return useMemo(() => ({
     status,

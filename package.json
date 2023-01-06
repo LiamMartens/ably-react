@@ -1,7 +1,7 @@
 {
   "name": "ably-react",
   "sideEffects": false,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.mjs",
   "types": "lib/index.d.ts",
