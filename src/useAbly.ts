@@ -1,11 +1,10 @@
-import useCookie from 'react-use-cookie';
 import Ably from 'ably';
 import {
   useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react';
 import { nanoid } from 'nanoid';
-import { Cookies } from './constants';
 import { AblyContext } from './AblyContext';
+import { useLocalStorageValue } from './useLocalStorageValue';
 
 type UseAblyOptions = {
   clientId?: string
@@ -34,7 +33,7 @@ export function useAbly(options: UseAblyOptions) {
   const context = useContext(AblyContext);
   const [client, setClient] = useState<Ably.Realtime | null>();
   const [status, setStatus] = useState(AblyClientStatus.IDLE);
-  const [clientId] = useCookie(Cookies.ABLY_CLIENT_ID, options.clientId ?? nanoid(8));
+  const [clientId] = useLocalStorageValue('__ably_client_id', options.clientId ?? nanoid(8));
 
   const connect = useCallback(() => {
     client?.connect();
