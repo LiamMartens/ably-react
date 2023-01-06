@@ -9,7 +9,7 @@ type UseAblyOptions = {
   clientId?: string
   autoConnect?: boolean
   name: string
-  authCallback: (data: Ably.Types.TokenParams) => Promise<
+  authCallback?: (data: Ably.Types.TokenParams) => Promise<
   Ably.Types.TokenDetails | Ably.Types.TokenRequest | string | null
   >
 };
@@ -60,11 +60,13 @@ export function useAbly(options: UseAblyOptions) {
       new Ably.Realtime({
         closeOnUnload: true,
         autoConnect: options.autoConnect ?? false,
-        authCallback: (data, callback) => {
-          authCallbackRef.current(data)
-            .then((result) => callback(null, result))
-            .catch((err) => callback(err, null));
-        },
+        ...(authCallbackRef.current ? {
+          authCallback: (data, callback) => {
+            authCallbackRef.current!(data)
+              .then((result) => callback(null, result))
+              .catch((err) => callback(err, null));
+          },
+        } : {}),
       })
     ));
 
