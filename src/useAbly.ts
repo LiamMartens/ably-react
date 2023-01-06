@@ -1,6 +1,6 @@
 import Ably from 'ably';
 import {
-  useCallback, useContext, useEffect, useMemo, useRef, useState,
+  useContext, useEffect, useMemo, useRef, useState,
 } from 'react';
 import { nanoid } from 'nanoid';
 import { AblyContext } from './AblyContext';
@@ -12,6 +12,7 @@ type UseAblyOptions = {
   authCallback?: (data: Ably.Types.TokenParams) => Promise<
   Ably.Types.TokenDetails | Ably.Types.TokenRequest | string | null
   >
+  clientOptions?: Ably.Types.ClientOptions
 };
 
 export enum AblyClientStatus {
@@ -34,14 +35,6 @@ export function useAbly(options: UseAblyOptions) {
   const [status, setStatus] = useState(AblyClientStatus.IDLE);
   const clientId = useMemo(() => options.clientId ?? nanoid(8), [options.clientId]);
 
-  const connect = useCallback(() => {
-    client?.connect();
-  }, [client]);
-
-  const close = useCallback(() => {
-    client?.close();
-  }, [client]);
-
   const authCallbackRef = useRef(options.authCallback);
   authCallbackRef.current = options.authCallback;
 
@@ -59,7 +52,7 @@ export function useAbly(options: UseAblyOptions) {
     const ablyClient = context.registerClient(options.name, hookId.current, () => (
       new Ably.Realtime({
         closeOnUnload: true,
-        autoConnect: options.autoConnect ?? false,
+        autoConnect: options.autoConnect ?? true,
         ...(authCallbackRef.current ? {
           authCallback: (data, callback) => {
             authCallbackRef.current!(data)
@@ -67,6 +60,7 @@ export function useAbly(options: UseAblyOptions) {
               .catch((err) => callback(err, null));
           },
         } : {}),
+        ...options.clientOptions,
       })
     ));
 
@@ -94,25 +88,19 @@ export function useAbly(options: UseAblyOptions) {
       // @README client will be auto-closed if all locks are released
       context.releaseClient(options.name, hookId.current);
     };
-  }, [options.name, options.clientId]);
+  }, [options.name, options.clientId, options.clientOptions]);
 
   return useMemo(() => ({
     status,
     client,
-    connect,
-    close,
     clientId,
   } as {
     status: typeof status
     client: typeof client
-    connect: typeof connect
-    close: typeof close
     clientId: typeof clientId
   }), [
     status,
     client,
-    connect,
-    close,
     clientId,
   ]);
 }
