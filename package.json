@@ -1,14 +1,14 @@
 {
   "name": "ably-react",
   "sideEffects": false,
-  "version": "0.0.1",
-  "type": "module",
-  "main": "lib/index.js",
-  "module": "lib/index.js",
+  "version": "0.0.2",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.mjs",
   "types": "lib/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "build:js": "swc -C module.type=es6 ./src -d ./lib",
+    "build:esm": "swc -C module.type=es6 ./src -d ./lib/esm",
+    "build:cjs": "swc -C module.type=commonjs ./src -d ./lib/cjs",
     "build:types": "tsc -p .",
     "build": "run-p build:*"
   },
