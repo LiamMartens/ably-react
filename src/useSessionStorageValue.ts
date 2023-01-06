@@ -1,14 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 
-export function useLocalStorageValue(name: string, initialValue: string = '') {
+export function useSessionStorageValue(name: string, initialValue: string = '') {
   const [value, setValue] = useState(
     typeof window === 'undefined' ? initialValue : (
-      window.localStorage.getItem(name) ?? initialValue
+      window.sessionStorage.getItem(name) ?? initialValue
     ),
   );
 
   const updateValue = useCallback((incoming: string) => {
-    window.localStorage.setItem(name, incoming);
+    window.sessionStorage.setItem(name, incoming);
     setValue(incoming);
   }, [name]);
 

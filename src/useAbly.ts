@@ -4,7 +4,7 @@ import {
 } from 'react';
 import { nanoid } from 'nanoid';
 import { AblyContext } from './AblyContext';
-import { useLocalStorageValue } from './useLocalStorageValue';
+import { useSessionStorageValue } from './useSessionStorageValue';
 
 type UseAblyOptions = {
   clientId?: string
@@ -33,7 +33,7 @@ export function useAbly(options: UseAblyOptions) {
   const context = useContext(AblyContext);
   const [client, setClient] = useState<Ably.Realtime | null>();
   const [status, setStatus] = useState(AblyClientStatus.IDLE);
-  const [clientId] = useLocalStorageValue('__ably_client_id', options.clientId ?? nanoid(8));
+  const [clientId] = useSessionStorageValue('__ably_client_id', options.clientId ?? nanoid(8));
 
   const connect = useCallback(() => {
     client?.connect();
