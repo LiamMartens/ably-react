@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 /*
  * This hook is simply used to present a client to a channel
  */
-export function usePresent(channel: Types.RealtimeChannelCallbacks) {
+export function usePresent(channel: Types.RealtimeChannelCallbacks | null) {
   const leaveChannelTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearLeaveChannelTimeout = useCallback(() => {
@@ -19,14 +19,14 @@ export function usePresent(channel: Types.RealtimeChannelCallbacks) {
   const leaveChannelPresence = useCallback(() => {
     clearLeaveChannelTimeoutRef.current();
     leaveChannelTimeoutIdRef.current = setTimeout(() => {
-      channel.presence.leave();
+      channel?.presence.leave();
     }, 1000);
-  }, [clearLeaveChannelTimeoutRef]);
+  }, [channel, clearLeaveChannelTimeoutRef]);
   const leaveChannelPresenceRef = useRef(leaveChannelPresence);
   leaveChannelPresenceRef.current = leaveChannelPresence;
 
   useEffect(() => {
-    channel.presence.enter();
+    channel?.presence.enter();
     return () => {
       leaveChannelPresenceRef.current();
     };

@@ -5,7 +5,7 @@ import {
 
 // can be used to determine whether a client is present on a specific channel
 export function useIsClientPresent(
-  channel: Types.RealtimeChannelCallbacks,
+  channel: Types.RealtimeChannelCallbacks | null,
   clientId: string,
   onError?: (error: Types.ErrorInfo | null | undefined) => void,
 ) {
@@ -50,11 +50,11 @@ export function useIsClientPresent(
       }
     };
 
-    channel.presence.subscribe(handler, (err) => {
+    channel?.presence.subscribe(handler, (err) => {
       // trigger error handler
       if (err) onErrorRef.current?.(err);
       // check if client is already present
-      channel.presence.get((getPresenceError, presence) => {
+      channel?.presence.get((getPresenceError, presence) => {
         // trigger error handler if there is an error
         if (getPresenceError) onErrorRef.current?.(getPresenceError);
         presence?.forEach((entry) => handler(entry));
@@ -62,7 +62,7 @@ export function useIsClientPresent(
     });
 
     return () => {
-      channel.presence.unsubscribe(handler);
+      channel?.presence.unsubscribe(handler);
     };
   }, [channel, clientId, onErrorRef, clearRemovePresenceTimeoutIdRef]);
 
