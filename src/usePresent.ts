@@ -1,5 +1,6 @@
 import type { Types } from 'ably';
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { useCallbackRef } from 'use-auto-callback-ref';
 
 /*
  * This hook is simply used to present a client to a channel
@@ -7,23 +8,19 @@ import { useCallback, useEffect, useRef } from 'react';
 export function usePresent(channel: Types.RealtimeChannelCallbacks | null) {
   const leaveChannelTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const clearLeaveChannelTimeout = useCallback(() => {
+  const clearLeaveChannelTimeoutRef = useCallbackRef(() => {
     if (leaveChannelTimeoutIdRef.current) {
       clearTimeout(leaveChannelTimeoutIdRef.current);
       leaveChannelTimeoutIdRef.current = null;
     }
   }, [leaveChannelTimeoutIdRef]);
-  const clearLeaveChannelTimeoutRef = useRef(clearLeaveChannelTimeout);
-  clearLeaveChannelTimeoutRef.current = clearLeaveChannelTimeout;
 
-  const leaveChannelPresence = useCallback(() => {
+  const leaveChannelPresenceRef = useCallbackRef(() => {
     clearLeaveChannelTimeoutRef.current();
     leaveChannelTimeoutIdRef.current = setTimeout(() => {
       channel?.presence.leave();
     }, 1000);
   }, [channel, clearLeaveChannelTimeoutRef]);
-  const leaveChannelPresenceRef = useRef(leaveChannelPresence);
-  leaveChannelPresenceRef.current = leaveChannelPresence;
 
   useEffect(() => {
     clearLeaveChannelTimeoutRef.current();

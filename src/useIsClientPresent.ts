@@ -1,7 +1,8 @@
 import { Types } from 'ably';
 import {
-  useCallback, useEffect, useRef, useState,
+  useEffect, useRef, useState,
 } from 'react';
+import { useCallbackRef } from 'use-auto-callback-ref';
 
 // can be used to determine whether a client is present on a specific channel
 export function useIsClientPresent(
@@ -15,23 +16,19 @@ export function useIsClientPresent(
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
-  const clearRemovePresenceTimeoutId = useCallback(() => {
+  const clearRemovePresenceTimeoutIdRef = useCallbackRef(() => {
     if (removePresenceTimeoutIdRef.current) {
       clearTimeout(removePresenceTimeoutIdRef.current);
       removePresenceTimeoutIdRef.current = null;
     }
   }, [removePresenceTimeoutIdRef]);
-  const clearRemovePresenceTimeoutIdRef = useRef(clearRemovePresenceTimeoutId);
-  clearRemovePresenceTimeoutIdRef.current = clearRemovePresenceTimeoutId;
 
-  const removePresence = useCallback(() => {
+  const removePresenceRef = useCallbackRef(() => {
     clearRemovePresenceTimeoutIdRef.current();
     removePresenceTimeoutIdRef.current = setTimeout(() => {
       setIsPresent(false);
     }, 1000);
   }, [clearRemovePresenceTimeoutIdRef, removePresenceTimeoutIdRef]);
-  const removePresenceRef = useRef(removePresence);
-  removePresenceRef.current = removePresence;
 
   useEffect(() => {
     // if the channel changes - reset the presentness

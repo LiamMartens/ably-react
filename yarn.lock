@@ -3066,6 +3066,11 @@ url-to-options@^1.0.1:
   resolved "https://registry.yarnpkg.com/url-to-options/-/url-to-options-1.0.1.tgz#1505a03a289a48cbd7a434efbaeec5055f5633a9"
   integrity sha512-0kQLIzG4fdk/G5NONku64rSH/x32NOA39LVQqlK8Le6lvTF6GGRJpqaQFGgU+CLwySIqBSMdwYM0sYcW9f6P4A==
 
+use-auto-callback-ref@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/use-auto-callback-ref/-/use-auto-callback-ref-1.0.0.tgz#92aea0d44ecf0df2fa2b2a414ff91ad556297ff6"
+  integrity sha512-fIgWMeCb3ABJ0upBv4gtzqL0oIr+WzhCGyoNRDxgcFMrOp3hDKFr6ykG6jljGnWSyHqzcxD5z2v+mjyGRylbHQ==
+
 util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
