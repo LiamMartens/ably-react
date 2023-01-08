@@ -7,9 +7,13 @@ import {
 export function useIsClientPresent(
   channel: Types.RealtimeChannelCallbacks,
   clientId: string,
+  onError?: (error: Types.ErrorInfo | null | undefined) => void,
 ) {
   const removePresenceTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isPresent, setIsPresent] = useState(false);
+
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   const clearRemovePresenceTimeoutId = useCallback(() => {
     if (removePresenceTimeoutIdRef.current) {
@@ -34,7 +38,8 @@ export function useIsClientPresent(
     // this will be delayed in case the client only briefly disconnects
     removePresenceRef.current();
 
-    channel.presence.subscribe((message) => {
+    // attach handler
+    const handler = (message: Types.PresenceMessage) => {
       if (message.clientId === clientId) {
         if (message.action === 'enter') {
           clearRemovePresenceTimeoutIdRef.current();
@@ -43,9 +48,23 @@ export function useIsClientPresent(
           removePresenceRef.current();
         }
       }
+    };
+
+    channel.presence.subscribe(handler, (err) => {
+      // trigger error handler
+      if (err) onErrorRef.current?.(err);
+      // check if client is already present
+      channel.presence.get((getPresenceError, presence) => {
+        // trigger error handler if there is an error
+        if (getPresenceError) onErrorRef.current?.(getPresenceError);
+        presence?.forEach((entry) => handler(entry));
+      });
     });
-    channel.presence.unsubscribe();
-  }, [channel, clientId, clearRemovePresenceTimeoutIdRef]);
+
+    return () => {
+      channel.presence.unsubscribe(handler);
+    };
+  }, [channel, clientId, onErrorRef, clearRemovePresenceTimeoutIdRef]);
 
   return isPresent;
 }
