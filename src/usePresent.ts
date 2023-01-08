@@ -26,6 +26,7 @@ export function usePresent(channel: Types.RealtimeChannelCallbacks | null) {
   leaveChannelPresenceRef.current = leaveChannelPresence;
 
   useEffect(() => {
+    clearLeaveChannelTimeoutRef.current();
     channel?.presence.enter();
     return () => {
       leaveChannelPresenceRef.current();
