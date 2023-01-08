@@ -9,7 +9,7 @@ type UseAblyOptions = {
   skip?: boolean
   clientId?: string
   autoConnect?: boolean
-  name: string
+  name?: string
   authCallback?: (data: Ably.Types.TokenParams) => Promise<
   Ably.Types.TokenDetails | Ably.Types.TokenRequest | string | null
   >
@@ -54,7 +54,7 @@ export function useAbly(options: UseAblyOptions) {
     const handleFailed = () => setStatus(AblyClientStatus.FAILED);
     const handleUpdate = () => setStatus(AblyClientStatus.UPDATE);
 
-    const ablyClient = context.registerClient(options.name, hookId.current, () => (
+    const ablyClient = context.registerClient(options.name ?? 'default', hookId.current, () => (
       new Ably.Realtime({
         closeOnUnload: true,
         autoConnect: options.autoConnect ?? true,
@@ -91,7 +91,7 @@ export function useAbly(options: UseAblyOptions) {
       ablyClient.connection.off('failed', handleFailed);
       ablyClient.connection.off('update', handleUpdate);
       // @README client will be auto-closed if all locks are released
-      context.releaseClient(options.name, hookId.current);
+      context.releaseClient(options.name ?? 'default', hookId.current);
     };
   }, [options.skip, options.name, options.clientId, options.clientOptions]);
 
