@@ -24,9 +24,22 @@ export function usePresent(channel: Types.RealtimeChannelCallbacks | null) {
 
   useEffect(() => {
     clearLeaveChannelTimeoutRef.current();
-    channel?.presence.enter();
+
+    const attachedHandler = () => {
+      channel?.presence.enter();
+    };
+
+    channel?.presence.enter(undefined, (error) => {
+      if (error) {
+        console.warn(error);
+        // if there was an error let's try and wait until the channel is attached
+        channel.on('attached', attachedHandler);
+      }
+    });
+
     return () => {
       leaveChannelPresenceRef.current();
+      channel?.off('attached', attachedHandler);
     };
   }, [channel]);
 }
