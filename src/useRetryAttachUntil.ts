@@ -4,9 +4,10 @@ import { useEffect, useRef } from 'react';
 export function useRetryAttachUntil(
   channel: Types.RealtimeChannelCallbacks | null,
   retryTimeout: number,
-  untilCallback: () => boolean,
+  untilCallback: (retryCount: number, event: Types.ChannelStateChange) => boolean,
   onFail?: (event: Types.ChannelStateChange) => void,
 ) {
+  const retryCountRef = useRef(0);
   const reattachTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const onFailRef = useRef(onFail);
@@ -18,7 +19,8 @@ export function useRetryAttachUntil(
     }
 
     const failedHandler = (event: Types.ChannelStateChange) => {
-      if (untilCallback()) {
+      if (untilCallback(retryCountRef.current, event)) {
+        retryCountRef.current += retryCountRef.current;
         reattachTimeoutIdRef.current = setTimeout(() => {
           channel.attach();
         }, retryTimeout);
@@ -34,6 +36,8 @@ export function useRetryAttachUntil(
       }
     };
 
+    // reset retry count if channel changes, or callback changes or timeout changes
+    retryCountRef.current = 0;
     channel.on('failed', failedHandler);
     channel.on('attached', attachedOrAttachingHandler);
     channel.on('attaching', attachedOrAttachingHandler);
