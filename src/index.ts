@@ -5,3 +5,4 @@ export * from './useChannel';
 export * from './usePresent';
 export * from './useIsClientPresent';
 export * from './useAblyClient';
+export * from './useChannelStatus';
