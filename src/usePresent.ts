@@ -29,12 +29,9 @@ export function usePresent(channel: Types.RealtimeChannelCallbacks | null) {
       channel?.presence.enter();
     };
 
+    channel?.on('attached', attachedHandler);
     channel?.presence.enter(undefined, (error) => {
-      if (error) {
-        console.warn(error);
-        // if there was an error let's try and wait until the channel is attached
-        channel.on('attached', attachedHandler);
-      }
+      if (error) console.warn(error);
     });
 
     return () => {

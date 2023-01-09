@@ -46,7 +46,6 @@ export function useAbly(options: UseAblyOptions) {
         ...options.clientOptions,
       })
     ));
-
     setClient(ablyClient);
 
     return () => {
