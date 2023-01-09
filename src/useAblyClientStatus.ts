@@ -37,19 +37,24 @@ export function useAblyClientStatus(client: Realtime | null) {
     }, 1000);
   }, []);
 
+  const updateStatus = useCallback((incoming: AblyClientStatus) => {
+    clearResetStatusTimeoutIdRef.current();
+    setStatus(incoming);
+  }, []);
+
   useEffect(() => {
     resetStatus();
 
     if (client) {
-      const handleInitialized = () => setStatus(AblyClientStatus.INITIALIZED);
-      const handleConnected = () => setStatus(AblyClientStatus.CONNECTED);
-      const handleConnecting = () => setStatus(AblyClientStatus.CONNECTING);
-      const handleDisconnected = () => setStatus(AblyClientStatus.DISCONNECTED);
-      const handleSuspended = () => setStatus(AblyClientStatus.SUSPENDED);
-      const handleClosed = () => setStatus(AblyClientStatus.CLOSED);
-      const handleClosing = () => setStatus(AblyClientStatus.CLOSING);
-      const handleFailed = () => setStatus(AblyClientStatus.FAILED);
-      const handleUpdate = () => setStatus(AblyClientStatus.UPDATE);
+      const handleInitialized = () => updateStatus(AblyClientStatus.INITIALIZED);
+      const handleConnected = () => updateStatus(AblyClientStatus.CONNECTED);
+      const handleConnecting = () => updateStatus(AblyClientStatus.CONNECTING);
+      const handleDisconnected = () => updateStatus(AblyClientStatus.DISCONNECTED);
+      const handleSuspended = () => updateStatus(AblyClientStatus.SUSPENDED);
+      const handleClosed = () => updateStatus(AblyClientStatus.CLOSED);
+      const handleClosing = () => updateStatus(AblyClientStatus.CLOSING);
+      const handleFailed = () => updateStatus(AblyClientStatus.FAILED);
+      const handleUpdate = () => updateStatus(AblyClientStatus.UPDATE);
 
       client.connection.on('initialized', handleInitialized);
       client.connection.on('connected', handleConnected);
