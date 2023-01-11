@@ -8,3 +8,4 @@ export * from './useIsClientPresent';
 export * from './useAblyClient';
 export * from './useChannelStatus';
 export * from './useRetryAttachUntil';
+export * from './useHandshakeHandler';

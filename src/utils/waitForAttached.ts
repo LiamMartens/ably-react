@@ -33,7 +33,9 @@ export function waitForAttached(channel: Types.RealtimeChannelCallbacks, timeout
     }
   }) as Promise<void> & {
     cancel: typeof cancel
+    canceled: boolean
   };
+  promise.canceled = false;
   promise.cancel = cancel;
 
   return promise;
