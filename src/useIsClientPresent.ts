@@ -41,10 +41,10 @@ export function useIsClientPresent(
     if (channelStatus === 'attached') {
       const handler = (message: Types.PresenceMessage) => {
         if (message.clientId === clientId) {
-          if (message.action === 'enter') {
+          if (message.action === 'enter' || message.action === 'present' || message.action === 'update') {
             clearRemovePresenceTimeoutIdRef.current();
             setIsPresent(true);
-          } else if (message.action === 'leave') {
+          } else if (message.action === 'leave' || message.action === 'absent') {
             removePresenceRef.current();
           }
         }
