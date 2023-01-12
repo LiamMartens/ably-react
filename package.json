@@ -6,6 +6,14 @@
   "module": "lib/esm/index.mjs",
   "types": "lib/index.d.ts",
   "license": "MIT",
+  "author": {
+    "name": "Liam Martens",
+    "email": "hi@liammartens.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LiamMartens/ably-react"
+  },
   "scripts": {
     "build:esm": "swc -C module.type=es6 ./src -d ./lib/esm",
     "build:cjs": "swc -C module.type=commonjs ./src -d ./lib/cjs",

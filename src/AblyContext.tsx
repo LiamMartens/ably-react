@@ -25,9 +25,11 @@ export const AblyContext = createContext<AblyContextValue>({
   $e: mitt<AblyContextEvents>(),
   clients: new Map(),
   registerClient: () => {
-    throw new Error('Not implemented');
+    throw new Error('AblyContextProvider not found');
   },
-  releaseClient: () => {},
+  releaseClient: () => {
+    throw new Error('AblyContextProvider not found');
+  },
 });
 
 export function AblyContextProvider({ children }: PropsWithChildren<{}>) {
