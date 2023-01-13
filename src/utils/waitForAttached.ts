@@ -1,6 +1,9 @@
 import { Types } from 'ably';
 
-export function waitForAttached(channel: Types.RealtimeChannelCallbacks, timeout = 0) {
+export function waitForAttached(
+  channel: Types.RealtimeChannelCallbacks,
+  timeout: number | false = false,
+) {
   let cancel = () => {};
   let rejectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -23,7 +26,7 @@ export function waitForAttached(channel: Types.RealtimeChannelCallbacks, timeout
       cancel = () => handler();
       channel.on('attached', handler);
 
-      if (timeout > 0) {
+      if (timeout) {
         rejectTimeoutId = setTimeout(() => {
           cancelTimeout();
           channel.off('attached', handler);
