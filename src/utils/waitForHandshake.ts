@@ -16,7 +16,7 @@ export function waitForHandshake(
   let waitForMessagePromise: ReturnType<typeof waitForMessage> | null = null;
   let retryIntervalId: ReturnType<typeof setInterval> | null = null;
 
-  const promise = new Promise<void>(async (resolve) => {
+  const promise = new Promise<void>(async (resolve, reject) => {
     await waitForAttachedPromise;
     if (canceled) {
       resolve();
@@ -44,6 +44,12 @@ export function waitForHandshake(
       if (retryIntervalId !== null) {
         clearInterval(retryIntervalId);
       }
+    });
+
+    waitForMessagePromise.then(() => {
+      resolve();
+    }).catch((err) => {
+      reject(err);
     });
   }) as Promise<void> & {
     cancel: () => void;
