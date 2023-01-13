@@ -144,5 +144,10 @@ await waitForMessage(channel, (message) => message.name === 'ping', 1000); // if
 This utility returns a promise which will send a handshake request (and retry per interval), until the handshake is accepted by another client.
 
 ```js
-await waitForHandshake(channel, 1000 /* retry interval */, 1000); // if timeout is omitted, the promise will never reject
+await waitForHandshake(
+  channel,
+  1000 /* retry interval */,
+  1000 /* timeout */,
+  (message) => true, /* only accept handshake if ... */
+); // if timeout is omitted, the promise will never reject
 ```
