@@ -26,13 +26,11 @@ export function waitForHandshake(
     // wait until the channel is attached (if not already)
     // create a waitForMessage promise which will wait for the handshake callback
     // with the same handshakeId
-    if (timeout) {
-      waitForMessagePromise = waitForMessage(channel, (message) => (
-        message.name === '__ably-react__handshake__callback'
-        && message.data === handshakeId
-        && (!acceptHandshakeIf || acceptHandshakeIf(message))
-      ), timeout);
-    }
+    waitForMessagePromise = waitForMessage(channel, (message) => (
+      message.name === '__ably-react__handshake__callback'
+      && message.data === handshakeId
+      && (!acceptHandshakeIf || acceptHandshakeIf(message))
+    ), timeout);
 
     // publish initiate handshakeId
     channel.publish('__ably-react__handshake__initiate', handshakeId);

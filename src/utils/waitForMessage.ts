@@ -3,7 +3,7 @@ import { Types } from 'ably';
 export function waitForMessage(
   channel: Types.RealtimeChannelCallbacks,
   when: (message: Types.Message) => boolean,
-  timeout = 0,
+  timeout: number | false = false,
 ) {
   let cancel = () => {};
   let rejectTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -32,7 +32,7 @@ export function waitForMessage(
 
     channel.subscribe(handler);
 
-    if (timeout > 0) {
+    if (timeout) {
       rejectTimeoutId = setTimeout(() => {
         cancelTimeout();
         channel.unsubscribe(handler);
