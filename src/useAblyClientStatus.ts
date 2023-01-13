@@ -6,7 +6,7 @@ import { useCallbackRef } from 'use-auto-callback-ref';
 
 export enum AblyClientStatus {
   IDLE = 'idle',
-  INITIALIZED = 'idle',
+  INITIALIZED = 'initialized',
   CONNECTED = 'connected',
   CONNECTING = 'connecting',
   DISCONNECTED = 'disconnected',
@@ -16,6 +16,18 @@ export enum AblyClientStatus {
   FAILED = 'failed',
   UPDATE = 'update',
 }
+
+const connectionStateToClientStatus = {
+  initialized: AblyClientStatus.INITIALIZED,
+  connected: AblyClientStatus.CONNECTED,
+  connecting: AblyClientStatus.CONNECTING,
+  disconnected: AblyClientStatus.DISCONNECTED,
+  suspended: AblyClientStatus.SUSPENDED,
+  closed: AblyClientStatus.CLOSED,
+  closing: AblyClientStatus.CLOSING,
+  failed: AblyClientStatus.FAILED,
+  update: AblyClientStatus.UPDATE,
+};
 
 export function useAblyClientStatus(client: Realtime | null) {
   const [status, setStatus] = useState(AblyClientStatus.IDLE);
@@ -56,6 +68,7 @@ export function useAblyClientStatus(client: Realtime | null) {
       const handleFailed = () => updateStatus(AblyClientStatus.FAILED);
       const handleUpdate = () => updateStatus(AblyClientStatus.UPDATE);
 
+      updateStatus(connectionStateToClientStatus[client.connection.state]);
       client.connection.on('initialized', handleInitialized);
       client.connection.on('connected', handleConnected);
       client.connection.on('connecting', handleConnecting);
