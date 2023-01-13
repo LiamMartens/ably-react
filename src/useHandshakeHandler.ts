@@ -22,5 +22,5 @@ export function useHandshakeHandler(channel: Types.RealtimeChannelCallbacks | nu
     }
 
     return () => {};
-  }, []);
+  }, [channel]);
 }
