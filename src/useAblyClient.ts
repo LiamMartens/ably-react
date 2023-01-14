@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'use-sync-external-store';
 import { AblyClients } from './AblyClients';
 
 export function useAblyClient(name = 'default') {
-  const [client, setClient] = useState(AblyClients.clients.get(name)?.client ?? null);
-
-  useEffect(() => {
-    setClient(AblyClients.clients.get(name)?.client ?? null);
-    AblyClients.$e.on('updated', (clients) => {
-      setClient(clients.get(name)?.client ?? null);
-    });
-  }, [name]);
+  const client = useSyncExternalStore(
+    (handler) => () => {
+      AblyClients.$e.on('updated', handler);
+      return () => AblyClients.$e.off('updated', handler);
+    },
+    () => AblyClients.clients.get(name)?.client ?? null,
+    () => null,
+  );
 
   return client;
 }
