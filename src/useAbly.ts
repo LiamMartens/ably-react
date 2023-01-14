@@ -5,6 +5,7 @@ import {
 import { nanoid } from 'nanoid';
 import { useAblyClientStatus } from './useAblyClientStatus';
 import { AblyClients } from './AblyClients';
+import { useClientId } from './useClientId';
 
 type UseAblyOptions = {
   skip?: boolean
@@ -21,7 +22,7 @@ export function useAbly(options: UseAblyOptions) {
   const hookId = useRef(nanoid(8));
   const [client, setClient] = useState<Ably.Realtime | null>(null);
   const status = useAblyClientStatus(client);
-  const clientId = useMemo(() => options.clientId ?? nanoid(8), [options.clientId]);
+  const clientId = useClientId(options.clientId ?? null);
 
   const authCallbackRef = useRef(options.authCallback);
   authCallbackRef.current = options.authCallback;
