@@ -1,41 +1,34 @@
 import { Types } from 'ably';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'use-sync-external-store';
+
+function subscribeToAllStateChanges(channel: Types.RealtimeChannelCallbacks | null) {
+  return (handler: () => void) => {
+    channel?.on('attached', handler);
+    channel?.on('attaching', handler);
+    channel?.on('detached', handler);
+    channel?.on('detaching', handler);
+    channel?.on('failed', handler);
+    channel?.on('initialized', handler);
+    channel?.on('suspended', handler);
+
+    return () => {
+      channel?.off('attached', handler);
+      channel?.off('attaching', handler);
+      channel?.off('detached', handler);
+      channel?.off('detaching', handler);
+      channel?.off('failed', handler);
+      channel?.off('initialized', handler);
+      channel?.off('suspended', handler);
+    };
+  };
+}
 
 export function useChannelStatus(channel: Types.RealtimeChannelCallbacks | null) {
-  const [status, setStatus] = useState(channel?.state ?? null);
-
-  useEffect(() => {
-    setStatus(channel?.state ?? null);
-    if (channel) {
-      const handleAttached = () => setStatus('attached');
-      const handleAttaching = () => setStatus('attaching');
-      const handleDetached = () => setStatus('detached');
-      const handleDetaching = () => setStatus('detaching');
-      const handleFailed = () => setStatus('failed');
-      const handleInitialized = () => setStatus('initialized');
-      const handleSuspended = () => setStatus('suspended');
-
-      channel.on('attached', handleAttached);
-      channel.on('attaching', handleAttaching);
-      channel.on('detached', handleDetached);
-      channel.on('detaching', handleDetaching);
-      channel.on('failed', handleFailed);
-      channel.on('initialized', handleInitialized);
-      channel.on('suspended', handleSuspended);
-
-      return () => {
-        channel.off('attached', handleAttached);
-        channel.off('attaching', handleAttaching);
-        channel.off('detached', handleDetached);
-        channel.off('detaching', handleDetaching);
-        channel.off('failed', handleFailed);
-        channel.off('initialized', handleInitialized);
-        channel.off('suspended', handleSuspended);
-      };
-    }
-
-    return () => {};
-  }, [channel]);
+  const status = useSyncExternalStore(
+    (handler) => subscribeToAllStateChanges(channel)(handler),
+    () => channel?.state ?? null,
+    () => null,
+  );
 
   return status;
 }
