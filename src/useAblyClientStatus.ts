@@ -1,5 +1,5 @@
 import { Realtime } from 'ably';
-import { useSyncExternalStore } from 'use-sync-external-store';
+import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
 export enum AblyClientStatus {
   IDLE = 'idle',

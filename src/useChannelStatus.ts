@@ -1,5 +1,5 @@
 import { Types } from 'ably';
-import { useSyncExternalStore } from 'use-sync-external-store';
+import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
 function subscribeToAllStateChanges(channel: Types.RealtimeChannelCallbacks | null) {
   return (handler: () => void) => {
