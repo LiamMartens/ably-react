@@ -15,19 +15,19 @@ export function waitForMessage(
     }
   };
 
-  const promise = new Promise<void>((resolve, reject) => {
+  const promise = new Promise<Types.Message | null>((resolve, reject) => {
     const handler = (message: Types.Message) => {
       if (when(message)) {
         cancelTimeout();
         channel.unsubscribe(handler);
-        resolve();
+        resolve(message);
       }
     };
 
     cancel = () => {
       cancelTimeout();
       channel.unsubscribe(handler);
-      resolve();
+      resolve(null);
     };
 
     channel.subscribe(handler);
@@ -39,7 +39,7 @@ export function waitForMessage(
         reject();
       }, timeout);
     }
-  }) as Promise<void> & {
+  }) as Promise<Types.Message> & {
     cancel: typeof cancel
   };
   promise.cancel = cancel;
