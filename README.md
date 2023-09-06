@@ -4,20 +4,6 @@ Opinionated React library for using Ably channels and clients.
 This library can handle multiple clients in a single page/app.
 
 ## Getting started
-To use this library, you will need to wrap your application with the `AblyContextProvider`.
-
-```jsx
-import { AblyContextProvider } from 'ably-react'
-
-function App() {
-  return (
-    <AblyContextProvider>
-      <MyComponent />
-    </AblyContextProvider>
-  )
-}
-```
-
 ## Available hooks
 ### useAbly
 This hook registers and uses a realtime Ably client.
