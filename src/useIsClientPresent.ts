@@ -13,6 +13,7 @@ export function useIsClientPresent(
 ) {
   const channelStatus = useChannelStatus(channel);
   const removePresenceTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const updatePresenceTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isPresent, setIsPresent] = useState(false);
 
   const onErrorRef = useRef(onError);
@@ -32,41 +33,54 @@ export function useIsClientPresent(
     }, 1000);
   }, [clearRemovePresenceTimeoutIdRef, removePresenceTimeoutIdRef]);
 
+  const updateClientPresenceRef = useCallbackRef(() => {
+    if (updatePresenceTimeoutIdRef.current) {
+      clearTimeout(updatePresenceTimeoutIdRef.current);
+    }
+    updatePresenceTimeoutIdRef.current = setTimeout(() => {
+      channel?.presence.get((getPresenceError, presence) => {
+        // trigger error handler if there is an error
+        if (getPresenceError) onErrorRef.current?.(getPresenceError);
+        setIsPresent(presence?.some((p) => p.clientId === clientId) ?? false);
+      });
+    }, 100);
+  }, [clientId, updatePresenceTimeoutIdRef]);
+
   useEffect(() => {
     // if the channel changes - reset the presentness
     // this will be delayed in case the client only briefly disconnects
     removePresenceRef.current();
 
     // attach handler
-    if (channelStatus === 'attached') {
-      const handler = (message: Types.PresenceMessage) => {
-        if (message.clientId === clientId) {
-          if (message.action === 'enter' || message.action === 'present' || message.action === 'update') {
-            clearRemovePresenceTimeoutIdRef.current();
-            setIsPresent(true);
-          } else if (message.action === 'leave' || message.action === 'absent') {
-            removePresenceRef.current();
-          }
+    const handler = (message: Types.PresenceMessage) => {
+      if (message.clientId === clientId) {
+        if (message.action === 'enter' || message.action === 'present' || message.action === 'update') {
+          clearRemovePresenceTimeoutIdRef.current();
+          setIsPresent(true);
+        } else if (message.action === 'leave' || message.action === 'absent') {
+          removePresenceRef.current();
         }
-      };
 
-      channel?.presence.subscribe(handler, (err) => {
-        // trigger error handler
-        if (err) onErrorRef.current?.(err);
-        // check if client is already present
-        channel?.presence.get((getPresenceError, presence) => {
-          // trigger error handler if there is an error
-          if (getPresenceError) onErrorRef.current?.(getPresenceError);
-          presence?.forEach((entry) => handler(entry));
-        });
+        // need to also fetch the actual presence (https://ably.com/tutorials/presence#tutorial-step-5)
+        // the presence events can come in out of sync
+        updateClientPresenceRef.current();
+      }
+    };
+
+    channel?.presence.subscribe(handler, (err) => {
+      // trigger error handler
+      if (err) onErrorRef.current?.(err);
+      // check if client is already present
+      channel?.presence.get((getPresenceError, presence) => {
+        // trigger error handler if there is an error
+        if (getPresenceError) onErrorRef.current?.(getPresenceError);
+        setIsPresent(presence?.some((p) => p.clientId === clientId) ?? false);
       });
+    });
 
-      return () => {
-        channel?.presence.unsubscribe(handler);
-      };
-    }
-
-    return () => {};
+    return () => {
+      channel?.presence.unsubscribe(handler);
+    };
   }, [channel, channelStatus, clientId, onErrorRef, clearRemovePresenceTimeoutIdRef]);
 
   return isPresent;
