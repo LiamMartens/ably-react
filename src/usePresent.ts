@@ -4,13 +4,17 @@ import { useEffect, useRef } from 'react';
 import { useCallbackRef } from 'use-auto-callback-ref';
 
 type Options = {
-  retryOptions?: RetryOptions
+  retryOptions?: RetryOptions;
 };
 
 /*
  * This hook is simply used to present a client to a channel
  */
-export function usePresent(channel: Types.RealtimeChannelCallbacks | null, options?: Options) {
+export function usePresent(
+  clientId: string,
+  channel: Types.RealtimeChannelCallbacks | null,
+  options?: Options,
+) {
   const leaveChannelTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -32,38 +36,57 @@ export function usePresent(channel: Types.RealtimeChannelCallbacks | null, optio
   useEffect(() => {
     clearLeaveChannelTimeoutRef.current();
 
-    const enterClient = () => retryAsPromised(
+    const enterClientIfNotPresent = () => retryAsPromised(
       () => new Promise<void>((resolve, reject) => {
-        channel?.presence.enter(undefined, (err) => {
-          if (err) return reject(err);
-          return resolve();
-        });
+        if (channel?.state !== 'attached') { throw new Error('Channel not ready'); }
+        channel.presence.get(
+          {
+            waitForSync: true,
+            clientId,
+          },
+          (err, presence) => {
+            if (err) return reject(err);
+            const isPresent = !!presence?.some(
+              (p) => p.clientId === clientId,
+            );
+            if (!isPresent) {
+              // only re-enter if not already present
+              return channel?.presence.enter(undefined, (enterError) => {
+                if (enterError) return reject(enterError);
+                return resolve();
+              });
+            }
+
+            return resolve();
+          },
+        );
       }),
       {
-        timeout: 3000,
+        backoffBase: 2000,
         max: Infinity,
         ...options?.retryOptions,
       },
     );
 
-    enterClient();
+    enterClientIfNotPresent();
     retryAsPromised(
       () => new Promise<void>((resolve, reject) => {
-        channel?.presence.subscribe(enterClient, (err) => {
+        if (channel?.state !== 'attached') { throw new Error('Channel not ready'); }
+        channel?.presence.subscribe(enterClientIfNotPresent, (err) => {
           if (err) return reject(err);
           return resolve();
         });
       }),
       {
-        timeout: 3000,
+        backoffBase: 2000,
         max: Infinity,
         ...options?.retryOptions,
       },
     );
 
     return () => {
-      channel?.presence.unsubscribe(enterClient);
+      channel?.presence.unsubscribe(enterClientIfNotPresent);
       leaveChannelPresenceRef.current();
     };
-  }, [channel]);
+  }, [clientId, channel]);
 }
