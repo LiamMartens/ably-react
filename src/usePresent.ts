@@ -1,12 +1,19 @@
 import type { Types } from 'ably';
+import { retryAsPromised, Options as RetryOptions } from 'retry-as-promised';
 import { useEffect, useRef } from 'react';
 import { useCallbackRef } from 'use-auto-callback-ref';
+
+type Options = {
+  retryOptions?: RetryOptions
+};
 
 /*
  * This hook is simply used to present a client to a channel
  */
-export function usePresent(channel: Types.RealtimeChannelCallbacks | null) {
-  const leaveChannelTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+export function usePresent(channel: Types.RealtimeChannelCallbacks | null, options?: Options) {
+  const leaveChannelTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const clearLeaveChannelTimeoutRef = useCallbackRef(() => {
     if (leaveChannelTimeoutIdRef.current) {
@@ -25,22 +32,38 @@ export function usePresent(channel: Types.RealtimeChannelCallbacks | null) {
   useEffect(() => {
     clearLeaveChannelTimeoutRef.current();
 
-    const attachedOrUpdatedHandler = () => {
-      channel?.presence.enter(undefined, (error) => {
-        if (error) console.warn(error);
-      });
-    };
+    const enterClient = () => retryAsPromised(
+      () => new Promise<void>((resolve, reject) => {
+        channel?.presence.enter(undefined, (err) => {
+          if (err) return reject(err);
+          return resolve();
+        });
+      }),
+      {
+        timeout: 3000,
+        max: Infinity,
+        ...options?.retryOptions,
+      },
+    );
 
-    channel?.on('attached', attachedOrUpdatedHandler);
-    channel?.on('update', attachedOrUpdatedHandler);
-    channel?.presence.enter(undefined, (error) => {
-      if (error) console.warn(error);
-    });
+    enterClient();
+    retryAsPromised(
+      () => new Promise<void>((resolve, reject) => {
+        channel?.presence.subscribe(enterClient, (err) => {
+          if (err) return reject(err);
+          return resolve();
+        });
+      }),
+      {
+        timeout: 3000,
+        max: Infinity,
+        ...options?.retryOptions,
+      },
+    );
 
     return () => {
+      channel?.presence.unsubscribe(enterClient);
       leaveChannelPresenceRef.current();
-      channel?.off('attached', attachedOrUpdatedHandler);
-      channel?.off('update', attachedOrUpdatedHandler);
     };
   }, [channel]);
 }

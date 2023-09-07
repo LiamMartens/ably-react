@@ -1,7 +1,7 @@
 {
   "name": "ably-react",
   "sideEffects": false,
-  "version": "0.14.4",
+  "version": "0.15.0",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.mjs",
   "types": "lib/index.d.ts",
@@ -54,6 +54,7 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "mitt": "^3.0.0",
     "nanoid": "^3.0.0",
+    "retry-as-promised": "^7.0.4",
     "use-auto-callback-ref": "^1.0.0"
   }
 }
