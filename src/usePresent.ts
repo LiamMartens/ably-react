@@ -25,18 +25,22 @@ export function usePresent(channel: Types.RealtimeChannelCallbacks | null) {
   useEffect(() => {
     clearLeaveChannelTimeoutRef.current();
 
-    const attachedHandler = () => {
-      channel?.presence.enter();
+    const attachedOrUpdatedHandler = () => {
+      channel?.presence.enter(undefined, (error) => {
+        if (error) console.warn(error);
+      });
     };
 
-    channel?.on('attached', attachedHandler);
+    channel?.on('attached', attachedOrUpdatedHandler);
+    channel?.on('update', attachedOrUpdatedHandler);
     channel?.presence.enter(undefined, (error) => {
       if (error) console.warn(error);
     });
 
     return () => {
       leaveChannelPresenceRef.current();
-      channel?.off('attached', attachedHandler);
+      channel?.off('attached', attachedOrUpdatedHandler);
+      channel?.off('update', attachedOrUpdatedHandler);
     };
   }, [channel]);
 }

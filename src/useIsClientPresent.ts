@@ -45,7 +45,7 @@ export function useIsClientPresent(
         if (getPresenceError) onErrorRef.current?.(getPresenceError);
         setIsPresent(presence?.some((p) => p.clientId === clientId) ?? false);
       });
-    }, 1000);
+    }, 300);
   }, [clientId, updatePresenceTimeoutIdRef]);
 
   useEffect(() => {
