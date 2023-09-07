@@ -36,14 +36,16 @@ export function useIsClientPresent(
   const updateClientPresenceRef = useCallbackRef(() => {
     if (updatePresenceTimeoutIdRef.current) {
       clearTimeout(updatePresenceTimeoutIdRef.current);
+      updatePresenceTimeoutIdRef.current = null;
     }
+
     updatePresenceTimeoutIdRef.current = setTimeout(() => {
       channel?.presence.get((getPresenceError, presence) => {
         // trigger error handler if there is an error
         if (getPresenceError) onErrorRef.current?.(getPresenceError);
         setIsPresent(presence?.some((p) => p.clientId === clientId) ?? false);
       });
-    }, 100);
+    }, 1000);
   }, [clientId, updatePresenceTimeoutIdRef]);
 
   useEffect(() => {
