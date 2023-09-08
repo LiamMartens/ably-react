@@ -12,30 +12,13 @@ export function useIsClientPresent(
   onError?: (error: Types.ErrorInfo | null | undefined) => void,
 ) {
   const channelStatus = useChannelStatus(channel);
-  const removePresenceTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const updatePresenceTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isPresent, setIsPresent] = useState(false);
 
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
-  const clearRemovePresenceTimeoutIdRef = useCallbackRef(() => {
-    if (removePresenceTimeoutIdRef.current) {
-      clearTimeout(removePresenceTimeoutIdRef.current);
-      removePresenceTimeoutIdRef.current = null;
-    }
-  }, [removePresenceTimeoutIdRef]);
-
-  const removePresenceRef = useCallbackRef(() => {
-    clearRemovePresenceTimeoutIdRef.current();
-    removePresenceTimeoutIdRef.current = setTimeout(() => {
-      setIsPresent(false);
-    }, 1000);
-  }, [clearRemovePresenceTimeoutIdRef, removePresenceTimeoutIdRef]);
-
   const updateClientPresenceRef = useCallbackRef(() => {
-    clearRemovePresenceTimeoutIdRef.current();
-
     if (updatePresenceTimeoutIdRef.current) {
       clearTimeout(updatePresenceTimeoutIdRef.current);
       updatePresenceTimeoutIdRef.current = null;
@@ -51,20 +34,9 @@ export function useIsClientPresent(
   }, [clientId, updatePresenceTimeoutIdRef]);
 
   useEffect(() => {
-    // if the channel changes - reset the presentness
-    // this will be delayed in case the client only briefly disconnects
-    removePresenceRef.current();
-
     // attach handler
     const handler = (message: Types.PresenceMessage) => {
       if (message.clientId === clientId) {
-        if (message.action === 'enter' || message.action === 'present' || message.action === 'update') {
-          clearRemovePresenceTimeoutIdRef.current();
-          setIsPresent(true);
-        } else if (message.action === 'leave' || message.action === 'absent') {
-          removePresenceRef.current();
-        }
-
         // need to also fetch the actual presence (https://ably.com/tutorials/presence#tutorial-step-5)
         // the presence events can come in out of sync
         updateClientPresenceRef.current();
@@ -89,7 +61,7 @@ export function useIsClientPresent(
       channel?.off('update', updateClientPresenceRef.current);
       channel?.presence.unsubscribe(handler);
     };
-  }, [channel, channelStatus, clientId, onErrorRef, clearRemovePresenceTimeoutIdRef]);
+  }, [channel, channelStatus, clientId, onErrorRef]);
 
   return isPresent;
 }
