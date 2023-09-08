@@ -34,6 +34,8 @@ export function useIsClientPresent(
   }, [clearRemovePresenceTimeoutIdRef, removePresenceTimeoutIdRef]);
 
   const updateClientPresenceRef = useCallbackRef(() => {
+    clearRemovePresenceTimeoutIdRef.current();
+
     if (updatePresenceTimeoutIdRef.current) {
       clearTimeout(updatePresenceTimeoutIdRef.current);
       updatePresenceTimeoutIdRef.current = null;
