@@ -69,6 +69,8 @@ export function useIsClientPresent(
       }
     };
 
+    channel?.on('attached', updateClientPresenceRef.current);
+    channel?.on('update', updateClientPresenceRef.current);
     channel?.presence.subscribe(handler, (err) => {
       // trigger error handler
       if (err) onErrorRef.current?.(err);
@@ -81,6 +83,8 @@ export function useIsClientPresent(
     });
 
     return () => {
+      channel?.off('attached', updateClientPresenceRef.current);
+      channel?.off('update', updateClientPresenceRef.current);
       channel?.presence.unsubscribe(handler);
     };
   }, [channel, channelStatus, clientId, onErrorRef, clearRemovePresenceTimeoutIdRef]);

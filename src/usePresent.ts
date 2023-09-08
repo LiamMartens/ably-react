@@ -89,8 +89,13 @@ export function usePresent(
       },
     );
 
+    channel?.on('attached', enterClientIfNotPresent);
+    channel?.on('update', enterClientIfNotPresent);
+
     return () => {
       // unsubscribe
+      channel?.off('attached', enterClientIfNotPresent);
+      channel?.off('update', enterClientIfNotPresent);
       channel?.presence.unsubscribe(enterClientIfNotPresent);
       // cancel client entering if pending
       enterClientIfNotPresent.cancel();
